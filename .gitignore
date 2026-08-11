@@ -1,0 +1,25 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+
+# data / local state
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+data/
+
+# secrets — NEVER commit keys
+secrets/
+*.key
+*.pem
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
