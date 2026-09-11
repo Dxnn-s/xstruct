@@ -19,6 +19,9 @@ class Market:
     description: str = ""
     # "binary" event contract (settles in [0,1]) | "perp" | "clob"
     kind: str = "clob"
+    # cross-venue matching key for the SAME underlying event across venues
+    # (e.g. a shared Polymarket condition_id). Empty when the venue exposes none.
+    event_key: str = ""
 
 
 @dataclass(frozen=True)
