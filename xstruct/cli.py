@@ -25,7 +25,11 @@ def make_venue(name: str, symbols: list[str] | None) -> Venue:
         from .venue.hyperliquid import HyperliquidVenue
 
         return HyperliquidVenue(symbols=symbols or ["BTC", "ETH", "SOL"])
-    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid)")
+    if name == "pascal":
+        from .venue.pascal import PascalVenue
+
+        return PascalVenue(symbols=symbols)  # None = all listed markets
+    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid, pascal)")
 
 
 def render_board(book: Book, top: int = 5) -> str:
@@ -48,14 +52,15 @@ def main() -> None:
     ap.add_argument("--iters", type=int, default=20, help="polling iterations")
     ap.add_argument("--sleep", type=float, default=0.5, help="seconds between polls")
     ap.add_argument("--depth", type=int, default=10, help="book depth to fetch")
+    ap.add_argument("--max-markets", type=int, default=6, help="cap markets shown on the board")
     ap.add_argument("--db", default="xstruct.db", help="sqlite tick store path")
     args = ap.parse_args()
 
     symbols = [s.strip() for s in args.symbols.split(",")] if args.symbols else None
     venue = make_venue(args.venue, symbols)
     store = TickStore(args.db)
-    markets = venue.get_markets()
-    print(f"[xstruct] {venue.name} adapter - {len(markets)} markets, logging to {args.db}\n")
+    markets = venue.get_markets()[: args.max_markets]
+    print(f"[xstruct] {venue.name} adapter - showing {len(markets)} markets, logging to {args.db}\n")
 
     for _ in range(args.iters):
         for m in markets:

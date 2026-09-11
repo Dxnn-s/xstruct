@@ -1,6 +1,21 @@
 """Venue adapters. All venue-specific logic (auth, endpoints, fee math) lives here,
-behind the `Venue` interface, so the engine and analytics never import a venue."""
+behind the `Venue` interface, so the engine and analytics never import a venue.
 
-from .base import Venue, Market, Book, Level, Trade
+Concrete adapters import httpx lazily (inside the network call), so importing this
+package stays dependency-free until you actually hit a live venue."""
 
-__all__ = ["Venue", "Market", "Book", "Level", "Trade"]
+from .base import Book, Level, Market, Trade, Venue
+from .hyperliquid import HyperliquidVenue
+from .pascal import PascalVenue
+from .paper import PaperVenue
+
+__all__ = [
+    "Venue",
+    "Market",
+    "Book",
+    "Level",
+    "Trade",
+    "PaperVenue",
+    "HyperliquidVenue",
+    "PascalVenue",
+]
