@@ -19,6 +19,12 @@ python -m xstruct.cli --iters 20 --sleep 0.5
 pytest -q            # (pip install pytest)
 ```
 
+## Known limits (stated plainly)
+- **Transport is REST polling.** No WebSocket, no snapshot-plus-delta book maintenance yet. Fine for
+  microstructure sampling and cross-venue comparison; not a low-latency path.
+- **Read path only.** Signing, order placement, and the market-making engine are not in yet.
+- Adapters today: Hyperliquid, Pascal, Polymarket, paper. No Kalshi yet.
+
 ## Roadmap (from the spec)
 - **Week 2** — real signed adapters: Pascal (Ed25519 dual-key, verify byte-exact vs quickstart test vectors) + Hyperliquid (official SDK, testnet). First live read + first live order.
 - **Week 3** — the MM engine: two-sided quoting, inventory skew, resolution-proximity/adverse-selection kill, hard risk gate + kill-switch.
