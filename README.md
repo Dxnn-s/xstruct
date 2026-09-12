@@ -1,35 +1,77 @@
 # xstruct
 
-**Venue-agnostic market-making engine + microstructure-analytics lab for prediction-market & derivatives CLOBs.**
+**A venue-agnostic market-making and microstructure toolkit for prediction markets and derivatives order books.**
 
-One build, many doors. Because Hyperliquid, Pascal, Kalshi, XO Market, and Ondo Perps all expose central-limit order books for event/derivatives contracts, a venue-agnostic MM + microstructure tool is the *union of their APIs*. Same engine, swappable adapters. It doubles as a self-study vehicle and a proof-of-work wedge at ~8 target startups (incl. River Markets / Valence / Kairos, whose product this literally is).
+Every venue publishes its book in a different shape. xstruct puts them behind one interface, so the same
+analysis and the same strategy code run against any of them without caring whose API is underneath.
 
-> Full design + build plan: `projects/startup-hunt/wedge-artifact-spec.md` in the Brain vault.
-
-## Status — Week 1 (the thin waist)
-Shipped:
-- `xstruct/venue/base.py` — the `Venue` interface + typed models (`Market`, `Book`, `Level`, `Trade`). **All venue differences (auth, endpoints, fee math) live behind this interface** — that's the whole trick.
-- `xstruct/venue/paper.py` — a `PaperVenue` synthetic adapter so the whole thing runs offline (demos + CI).
-- `xstruct/collect/store.py` — SQLite tick/book/trade store.
-- `xstruct/cli.py` — a live board printer that polls a venue and logs to SQLite.
-
-Zero dependencies — stdlib only. Runs today:
 ```bash
-python -m xstruct.cli --iters 20 --sleep 0.5
-pytest -q            # (pip install pytest)
+pip install -r requirements.txt
+python -m xstruct.monitor.live          # live cross-venue dislocation scan
+python -m xstruct.cli --venue pascal    # live depth-ladder board
 ```
 
-## Known limits (stated plainly)
-- **Transport is REST polling.** No WebSocket, no snapshot-plus-delta book maintenance yet. Fine for
-  microstructure sampling and cross-venue comparison; not a low-latency path.
-- **Read path only.** Signing, order placement, and the market-making engine are not in yet.
-- Adapters today: Hyperliquid, Pascal, Polymarket, paper. No Kalshi yet.
+## What it does today
 
-## Roadmap (from the spec)
-- **Week 2** — real signed adapters: Pascal (Ed25519 dual-key, verify byte-exact vs quickstart test vectors) + Hyperliquid (official SDK, testnet). First live read + first live order.
-- **Week 3** — the MM engine: two-sided quoting, inventory skew, resolution-proximity/adverse-selection kill, hard risk gate + kill-switch.
-- **Week 4** — microstructure report + cross-venue mispricing monitor → **ship v1** (the <60s demo).
-- **Weeks 5-8** — widen doors: Kalshi, XO vault MM, Ondo Perps collateral-health, HyperEVM CoreWriter demo (Foundry).
+**Four venues behind one `Venue` interface** — Hyperliquid (perps), Pascal, Polymarket, and a synthetic
+paper adapter so everything runs offline for demos and CI. Adding a venue is one file, not a refactor.
 
-## Safety spine
-Testnet/paper first · byte-exact signing verified against vendor test vectors before any live order · hard position/loss caps + kill-switch · never commit keys · repo lives **outside** any cloud-synced dir.
+**A live cross-venue monitor.** Pascal publishes the Polymarket `condition_id` and outcome `token_id` for
+each of its markets, so the two books join on a known key instead of fuzzy-matching market names. A real
+run on the ACA House 2026 market:
+
+```
+  Not extended, Democrats
+           pascal   bid 0.8440   ask 0.8700   mid 0.8570
+       polymarket   bid 0.8500   ask 0.8700   mid 0.8600
+      dislocation   0.0030
+```
+
+It reports the mid dislocation across venues and flags any locked cross-venue edge (a best bid above
+another venue's best ask, net of fees).
+
+**A terminal depth ladder**, with size bars, tick-aware price precision, and an ASCII fallback for
+consoles that cannot encode block glyphs.
+
+**A SQLite tick store** recording books and trades for later microstructure work, and a chart renderer
+that turns a recorded pair into a shareable dislocation figure.
+
+## One thing worth knowing if you build venue adapters
+
+Polymarket returns asks **descending**, so the first element on the wire is the *worst* ask, not the best.
+Trusting wire order gives you a best ask of 0.99 instead of the real one, and silently poisons every
+spread, mid and arbitrage check downstream. xstruct sorts both sides itself rather than trusting order.
+Pascal returns bids descending and asks ascending. Hyperliquid nests both under `levels: [bids, asks]`.
+
+## Known limits, stated plainly
+
+- **Transport is REST polling.** No WebSocket, no snapshot-plus-delta book maintenance. Fine for
+  microstructure sampling and cross-venue comparison, not a low-latency path.
+- **Read path only.** No signing, no order placement, no market-making engine yet.
+- Adapters today are Hyperliquid, Pascal, Polymarket and paper. No Kalshi.
+
+## Layout
+
+```
+xstruct/
+  venue/      one adapter per venue, all behind the Venue interface
+  collect/    SQLite tick store
+  monitor/    cross-venue mispricing scan
+  render/     terminal board
+  report/     charts
+```
+
+## Tests
+
+```bash
+pytest -q     # 28 tests, all offline (network calls are injectable)
+```
+
+## Roadmap
+
+Signed write paths (Pascal Ed25519, Hyperliquid SDK), then the market-making engine with inventory skew
+and a resolution-proximity kill, then more adapters (Kalshi next).
+
+## License
+
+MIT
