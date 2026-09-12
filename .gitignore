@@ -23,3 +23,7 @@ secrets/
 .DS_Store
 .idea/
 .vscode/
+
+# generated chart output
+dislocation.png
+*.png

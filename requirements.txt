@@ -1,6 +1,9 @@
 # Runtime: the paper adapter is stdlib-only; the Hyperliquid adapter needs httpx.
 httpx>=0.27
 
+# Report layer (charts)
+matplotlib>=3.8
+
 # Dev
 pytest>=8.0
 
@@ -10,4 +13,3 @@ pytest>=8.0
 # cryptography>=42.0   # RSA signing (Kalshi)
 # hyperliquid-python-sdk
 # pandas>=2.2
-# matplotlib>=3.8
