@@ -8,6 +8,7 @@ from .base import Book, Level, Market, Trade, Venue
 from .hyperliquid import HyperliquidVenue
 from .pascal import PascalVenue
 from .paper import PaperVenue
+from .polymarket import PolymarketVenue
 
 __all__ = [
     "Venue",
@@ -18,4 +19,5 @@ __all__ = [
     "PaperVenue",
     "HyperliquidVenue",
     "PascalVenue",
+    "PolymarketVenue",
 ]
