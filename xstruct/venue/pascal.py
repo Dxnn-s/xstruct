@@ -92,3 +92,27 @@ class PascalVenue(Venue):
             ts = float(t.get("time_ms", t.get("time", 0))) / 1000.0
             out.append(Trade(self.name, symbol, ts, float(px), float(sz), side))
         return out
+
+    def polymarket_refs(self) -> list[dict]:
+        """Pascal markets that name a Polymarket counterpart.
+
+        Returns the join keys for cross-venue work: Pascal's own symbol plus the
+        Polymarket condition_id and outcome token_id for the SAME event.
+        """
+        data = self._get("/markets", {})
+        out: list[dict] = []
+        for m in data.get("data", []):
+            da = m.get("display_attributes", {}) or {}
+            ref = da.get("reference", {}) or {}
+            if ref.get("kind") != "polymarket":
+                continue
+            token = ref.get("market_outcome_token_id")
+            if not token:
+                continue
+            out.append({
+                "symbol": m.get("symbol"),
+                "token_id": str(token),
+                "condition_id": ref.get("condition_id", ""),
+                "description": da.get("market_description") or da.get("event_description") or "",
+            })
+        return out
