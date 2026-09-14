@@ -5,10 +5,10 @@
 Every venue publishes its book in a different shape. xstruct puts them behind one interface, so the same
 analysis and the same strategy code run against any of them without caring whose API is underneath.
 
-<!-- DEMO: drop a 20-30s capture of `python -m xstruct.monitor.live` here, then delete this comment.
-     GitHub renders .gif inline and plays .mp4 in a player. Record the depth-ladder board for ~2s,
-     then the monitor catching the Pascal/Polymarket gap. No intro, no title card, no narration:
-     the first frame should already be the terminal running. -->
+![live board](assets/board-demo.gif)
+
+The depth ladder, polling Hyperliquid. Bid and ask bars share one scale, so a lopsided
+book looks lopsided.
 
 ![cross-venue dislocation](assets/cross-venue-dislocation.png)
 

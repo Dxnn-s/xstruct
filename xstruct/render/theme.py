@@ -55,6 +55,18 @@ def _fg(hexcode: str) -> str:
 class Theme:
     """Operator Amber tokens. `enabled=False` makes every token an empty string."""
 
+    # Two palettes. Dark is the terminal default. Light exists because a capture
+    # embedded in a README sits on a light page, and the dark steps do not survive
+    # the move: on warm paper (#f7f3e9) amber lands at 2.88 against a 3.0 floor.
+    PALETTES = {
+        "dark": dict(amber="#f59e0b", bright="#fbbf24", pale="#fcd34d", cyan="#22d3ee",
+                     green="#4ade80", rose="#fb7185", ink="#e7e5e4", muted="#78716c",
+                     faint="#44403c", bg="#0a0a0e"),
+        "light": dict(amber="#b45309", bright="#92400e", pale="#a16207", cyan="#0369a1",
+                      green="#15803d", rose="#be123c", ink="#1c1917", muted="#57534e",
+                      faint="#b8b0a0", bg="#f7f3e9"),
+    }
+
     # palette (matches the house anchor)
     AMBER = "#f59e0b"
     AMBER_BRIGHT = "#fbbf24"
@@ -66,9 +78,16 @@ class Theme:
     MUTED = "#78716c"      # chrome, labels
     FAINT = "#44403c"      # rules, separators
 
-    def __init__(self, enabled: bool | None = None, unicode_ok: bool | None = None) -> None:
+    def __init__(self, enabled: bool | None = None, unicode_ok: bool | None = None,
+                 mode: str = "dark") -> None:
         self.on = supports_color() if enabled is None else enabled
         self.g = Glyphs(unicode_ok)
+        self.mode = mode
+        pal = self.PALETTES[mode]
+        self.AMBER, self.AMBER_BRIGHT, self.AMBER_PALE = pal["amber"], pal["bright"], pal["pale"]
+        self.CYAN, self.GREEN, self.ROSE = pal["cyan"], pal["green"], pal["rose"]
+        self.INK, self.MUTED, self.FAINT = pal["ink"], pal["muted"], pal["faint"]
+        self.BG = pal["bg"]
 
     def _c(self, hexcode: str, s: str, bold: bool = False) -> str:
         if not self.on:
