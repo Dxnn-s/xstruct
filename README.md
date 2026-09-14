@@ -5,6 +5,16 @@
 Every venue publishes its book in a different shape. xstruct puts them behind one interface, so the same
 analysis and the same strategy code run against any of them without caring whose API is underneath.
 
+<!-- DEMO: drop a 20-30s capture of `python -m xstruct.monitor.live` here, then delete this comment.
+     GitHub renders .gif inline and plays .mp4 in a player. Record the depth-ladder board for ~2s,
+     then the monitor catching the Pascal/Polymarket gap. No intro, no title card, no narration:
+     the first frame should already be the terminal running. -->
+
+![cross-venue dislocation](assets/cross-venue-dislocation.png)
+
+Two venues listing the same event, and the gap between them. Pascal republishes the Polymarket
+`condition_id`, so the books line up on a known key instead of fuzzy-matching market names.
+
 ```bash
 pip install -r requirements.txt
 python -m xstruct.monitor.live          # live cross-venue dislocation scan
