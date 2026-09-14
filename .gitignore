@@ -24,6 +24,7 @@ secrets/
 .idea/
 .vscode/
 
-# generated chart output
+# generated chart output (but assets/ is the README's front door, keep it)
 dislocation.png
 *.png
+!assets/**
