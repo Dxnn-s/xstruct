@@ -33,6 +33,12 @@ class Dislocation:
     mid_spread: float | None  # max mid - min mid across venues
     arb_edge: float           # best locked cross-venue edge (<= 0 means none)
     arb_desc: str
+    # A mid gap only means the venues disagree if it clears the quotes themselves.
+    # Two books whose bid-ask ranges overlap have not disagreed about anything; their
+    # mids just landed in different places inside the same range. On thin markets that
+    # is most of them, so reporting the raw gap there is reporting noise.
+    noise_floor: float | None = None   # sum of the half-spreads
+    meaningful: bool = False           # mid gap exceeds the floor
 
 
 def _quote(venue: Venue, symbol: str) -> VenueQuote:
@@ -48,6 +54,15 @@ def scan_event(label: str, listings: list[tuple[Venue, str]], fee: float = 0.0) 
     mids = [q.mid for q in quotes if q.mid is not None]
     mid_spread = (max(mids) - min(mids)) if len(mids) >= 2 else None
 
+    half_spreads = [
+        (q.ask - q.bid) / 2 for q in quotes
+        if q.ask is not None and q.bid is not None
+    ]
+    noise_floor = sum(sorted(half_spreads, reverse=True)[:2]) if len(half_spreads) >= 2 else None
+    meaningful = bool(
+        mid_spread is not None and noise_floor is not None and mid_spread > noise_floor
+    )
+
     best_edge = 0.0
     best_desc = "none"
     for a in quotes:
@@ -58,7 +73,7 @@ def scan_event(label: str, listings: list[tuple[Venue, str]], fee: float = 0.0) 
             if edge > best_edge:
                 best_edge = edge
                 best_desc = f"buy {b.venue}@{b.ask:.4g} / sell {a.venue}@{a.bid:.4g} -> +{edge:.4g}"
-    return Dislocation(label, quotes, mid_spread, best_edge, best_desc)
+    return Dislocation(label, quotes, mid_spread, best_edge, best_desc, noise_floor, meaningful)
 
 
 def render(d: Dislocation) -> str:
@@ -69,7 +84,11 @@ def render(d: Dislocation) -> str:
         ask = f"{q.ask:.4g}" if q.ask is not None else "n/a"
         lines.append(f"   {q.venue:>12}:{q.symbol:<28} bid={bid:<8} ask={ask:<8} mid={mid}")
     spread = f"{d.mid_spread:.4g}" if d.mid_spread is not None else "n/a"
-    lines.append(f"   mid dislocation: {spread}")
+    if d.noise_floor is not None and d.mid_spread is not None:
+        verdict = "real" if d.meaningful else f"inside the spread, ignore (floor {d.noise_floor:.4g})"
+        lines.append(f"   mid dislocation: {spread}  [{verdict}]")
+    else:
+        lines.append(f"   mid dislocation: {spread}")
     lines.append(f"   arb: {d.arb_desc}" if d.arb_edge > 0 else "   arb: none")
     return "\n".join(lines)
 
