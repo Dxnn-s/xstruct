@@ -1,5 +1,7 @@
 # xstruct
 
+![tests](https://github.com/Dxnn-s/xstruct/actions/workflows/tests.yml/badge.svg)
+
 **A venue-agnostic market-making and microstructure toolkit for prediction markets and derivatives order books.**
 
 Every venue publishes its book in a different shape. xstruct puts them behind one interface, so the same
@@ -17,7 +19,8 @@ Two venues listing the same event, and the gap between them. Pascal republishes 
 
 ```bash
 pip install -r requirements.txt
-python -m xstruct.monitor.live          # live cross-venue dislocation scan
+python -m xstruct.monitor.live               # Pascal vs Polymarket, exact key join
+python -m xstruct.monitor.live --pair kalshi # Kalshi vs Polymarket, IDF title match
 python -m xstruct.cli --venue pascal    # live depth-ladder board
 ```
 
