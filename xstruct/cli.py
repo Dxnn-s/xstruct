@@ -28,16 +28,25 @@ def make_venue(name: str, symbols: list[str] | None) -> Venue:
         from .venue.hyperliquid import HyperliquidVenue
 
         return HyperliquidVenue(symbols=symbols or ["BTC", "ETH", "SOL"])
+    if name == "kalshi":
+        from .venue.kalshi import KalshiVenue
+
+        return KalshiVenue(tickers=symbols)
+    if name == "polymarket":
+        from .venue.polymarket import PolymarketVenue
+
+        # symbols are outcome token ids here; Pascal republishes them per market
+        return PolymarketVenue(tokens={t: t for t in (symbols or [])})
     if name == "pascal":
         from .venue.pascal import PascalVenue
 
         return PascalVenue(symbols=symbols)  # None = all listed markets
-    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid, pascal)")
+    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid, pascal, polymarket, kalshi)")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="xstruct live board")
-    ap.add_argument("--venue", default="paper", help="paper | hyperliquid | pascal")
+    ap.add_argument("--venue", default="paper", help="paper | hyperliquid | pascal | polymarket | kalshi")
     ap.add_argument("--symbols", default=None, help="comma-separated symbol filter (e.g. BTC,ETH)")
     ap.add_argument("--iters", type=int, default=20, help="polling iterations")
     ap.add_argument("--sleep", type=float, default=0.5, help="seconds between polls")
