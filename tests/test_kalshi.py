@@ -17,7 +17,10 @@ BOOK = {
                        ["0.8700", "1799.44"], ["0.8800", "265.22"]],
     }
 }
-EVENTS = {"events": [{"event_ticker": "KXELONMARS-99", "title": "Will Elon Musk visit Mars?"}]}
+EVENTS = {"events": [{"event_ticker": "KXELONMARS-99", "title": "Will Elon Musk visit Mars?",
+                      "markets": [{"ticker": "KXELONMARS-99", "event_ticker": "KXELONMARS-99",
+                                   "title": "Will Elon Musk visit Mars before Aug 1, 2099?",
+                                   "status": "active"}]}]}
 MARKETS = {"markets": [{"ticker": "KXELONMARS-99", "event_ticker": "KXELONMARS-99",
                         "title": "Will Elon Musk visit Mars before Aug 1, 2099?",
                         "status": "active", "yes_bid_dollars": "0.1000",
@@ -57,6 +60,7 @@ def test_mid_and_spread_match_the_venues_own_quote():
     b = venue().get_book("KXELONMARS-99")
     assert abs(b.mid - 0.11) < 1e-9
     assert abs(b.spread - 0.02) < 1e-9
+    assert b.ts > 0  # stamped at fetch; the payload has no timestamp of its own
 
 
 def test_sizes_survive_the_inversion():

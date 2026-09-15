@@ -25,10 +25,11 @@ scale as Pascal and Polymarket with no rescaling.
 
 Listing note: the unfiltered /markets feed is dominated by multivariate
 "CROSSCATEGORY-SHARD" combination markets with empty books, so discovery goes
-through /events instead.
+through /events with with_nested_markets=true, one request for everything.
 """
 from __future__ import annotations
 
+import time
 from typing import Callable
 
 from .base import Book, Level, Market, Trade, Venue
@@ -76,23 +77,25 @@ class KalshiVenue(Venue):
             return out
 
         out: list[Market] = []
-        evs = self._get("/events", {"limit": self._events, "status": "open"})
+        # with_nested_markets returns every market inline, so discovery is ONE request.
+        # Walking events and fetching /markets per event was 60+ calls and tripped 429.
+        evs = self._get("/events", {"limit": self._events, "status": "open",
+                                    "with_nested_markets": "true"})
         for e in evs.get("events", []):
-            et = e.get("event_ticker")
-            if not et:
+            et = e.get("event_ticker") or ""
+            if not et or "CROSSCATEGORY" in et:
                 continue
-            d = self._get("/markets", {"event_ticker": et, "limit": 1})
-            for m in d.get("markets", []):
-                out.append(self._market(m))
+            for m in e.get("markets") or []:
+                out.append(self._market(m, et))
         return out
 
-    def _market(self, m: dict) -> Market:
+    def _market(self, m: dict, event_ticker: str = "") -> Market:
         return Market(
             venue=self.name,
             symbol=m.get("ticker", ""),
             description=(m.get("title") or "")[:96],
             kind="binary",
-            event_key=m.get("event_ticker", ""),
+            event_key=m.get("event_ticker") or event_ticker,
         )
 
     def get_book(self, symbol: str, depth: int = 10) -> Book:
@@ -113,7 +116,8 @@ class KalshiVenue(Venue):
             key=lambda lv: lv.price,
         )[:depth]
 
-        return Book(venue=self.name, symbol=symbol, ts=0.0, bids=bids, asks=asks)
+        # the orderbook payload carries no timestamp, so stamp it at fetch
+        return Book(venue=self.name, symbol=symbol, ts=time.time(), bids=bids, asks=asks)
 
     def get_trades(self, symbol: str, limit: int = 50) -> list[Trade]:
         # Public trade history is not wired here yet. Empty keeps the interface honest.

@@ -47,3 +47,21 @@ def test_fee_eats_thin_edge():
     b = StubVenue("B", 0.50, 0.52)  # raw edge 0.08
     d = scan_event("evt", [(a, "EVT"), (b, "EVT")], fee=0.10)  # fee wipes it
     assert d.arb_edge == 0.0
+
+
+def test_gap_inside_overlapping_quotes_is_not_meaningful():
+    # mids differ by 0.02, but the two books overlap: A quotes 0.50-0.60, B 0.52-0.62.
+    # nobody has disagreed about anything, the mids just landed apart inside one range.
+    a = StubVenue("A", 0.50, 0.60)
+    b = StubVenue("B", 0.52, 0.62)
+    d = scan_event("evt", [(a, "EVT"), (b, "EVT")])
+    assert abs(d.mid_spread - 0.02) < 1e-9
+    assert d.noise_floor is not None and d.mid_spread <= d.noise_floor
+    assert d.meaningful is False
+
+
+def test_gap_that_clears_the_quotes_is_meaningful():
+    a = StubVenue("A", 0.50, 0.52)  # tight, mid 0.51
+    b = StubVenue("B", 0.60, 0.62)  # tight, mid 0.61
+    d = scan_event("evt", [(a, "EVT"), (b, "EVT")])
+    assert d.meaningful is True
