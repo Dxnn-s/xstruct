@@ -6,6 +6,7 @@ package stays dependency-free until you actually hit a live venue."""
 
 from .base import Book, Level, Market, Trade, Venue
 from .hyperliquid import HyperliquidVenue
+from .kalshi import KalshiVenue
 from .pascal import PascalVenue
 from .paper import PaperVenue
 from .polymarket import PolymarketVenue
@@ -18,6 +19,7 @@ __all__ = [
     "Trade",
     "PaperVenue",
     "HyperliquidVenue",
+    "KalshiVenue",
     "PascalVenue",
     "PolymarketVenue",
 ]
