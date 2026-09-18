@@ -26,7 +26,7 @@ python -m xstruct.cli --venue pascal    # live depth-ladder board
 
 ## What it does today
 
-**Four venues behind one `Venue` interface** — Hyperliquid (perps), Pascal, Polymarket, and a synthetic
+**Five venues behind one `Venue` interface** — Hyperliquid (perps), Pascal, Polymarket, Kalshi, and a synthetic
 paper adapter so everything runs offline for demos and CI. Adding a venue is one file, not a refactor.
 
 **A live cross-venue monitor.** Pascal publishes the Polymarket `condition_id` and outcome `token_id` for
@@ -61,7 +61,7 @@ Pascal returns bids descending and asks ascending. Hyperliquid nests both under 
 - **Transport is REST polling.** No WebSocket, no snapshot-plus-delta book maintenance. Fine for
   microstructure sampling and cross-venue comparison, not a low-latency path.
 - **Read path only.** No signing, no order placement, no market-making engine yet.
-- Adapters today are Hyperliquid, Pascal, Polymarket and paper. No Kalshi.
+- Adapters today are Hyperliquid, Pascal, Polymarket, Kalshi and paper.
 
 ## Layout
 
@@ -77,7 +77,7 @@ xstruct/
 ## Tests
 
 ```bash
-pytest -q     # 28 tests, all offline (network calls are injectable)
+pytest -q     # 39 tests, all offline (network calls are injectable)
 ```
 
 ## Roadmap
