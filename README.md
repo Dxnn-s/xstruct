@@ -83,7 +83,7 @@ pytest -q     # 39 tests, all offline (network calls are injectable)
 ## Roadmap
 
 Signed write paths (Pascal Ed25519, Hyperliquid SDK), then the market-making engine with inventory skew
-and a resolution-proximity kill, then more adapters (Kalshi next).
+and a resolution-proximity kill, then more adapters.
 
 ## License
 
