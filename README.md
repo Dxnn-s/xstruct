@@ -77,8 +77,46 @@ xstruct/
 ## Tests
 
 ```bash
-pytest -q     # 39 tests, all offline (network calls are injectable)
+pytest -q     # 48 tests, all offline (network calls are injectable)
 ```
+
+## Comparing the IDF matcher against turbopuffer BM25
+
+The Kalshi pair above matches titles with a hand-rolled IDF-weighted overlap. `tools/turbopuffer_match.py`
+asks whether a BM25 full-text index on [turbopuffer](https://turbopuffer.com) finds the same counterparts.
+It writes the Polymarket titles into a namespace with `full_text_search` on `title`, runs one BM25 query per
+Kalshi title, keeps the top hit above a threshold, and scores precision and recall at top-1 against
+`tests/fixtures/title_pairs.json`: 57 hand-labeled Kalshi titles (30 with a Polymarket counterpart, 27 without,
+3 more marked uncertain and excluded) built from live listings on 2026-10-09. The Israel Katz trap from
+`match.py`'s docstring is in there, labeled as having no counterpart. Both matchers see the same corpus and the
+same labels.
+
+```bash
+python tools/turbopuffer_match.py                 # offline: fixture titles, in-memory BM25 fake, no key needed
+pip install turbopuffer                           # or: pip install -e ".[turbopuffer]"
+export TURBOPUFFER_API_KEY=...                    # Launch plan, $16 a month minimum, no free tier
+python tools/turbopuffer_match.py --live          # real turbopuffer, same fixture corpus and labels
+python tools/turbopuffer_match.py --live --pull   # re-pull titles; labels missing from the new corpus are dropped
+```
+
+The offline fake implements write and a Lucene-style BM25 with turbopuffer's defaults (k1 1.2, b 0.75, k3 8)
+so the tests and the table run without a key. Its tokenizer is a plain lowercase split, not `word_v4`, so
+offline numbers are a rehearsal. Fill this table from a `--live` run:
+
+| method | threshold | predicted | correct | precision | recall |
+|---|---|---|---|---|---|
+| `match()` IDF overlap | 0.75 | TBD | TBD | TBD | TBD |
+| turbopuffer BM25 top-1, threshold tuned on the set | TBD | TBD | TBD | TBD | TBD |
+| turbopuffer BM25 top-1, no threshold | 0 | TBD | TBD | TBD | TBD |
+
+This measures match quality on a few hundred titles. It is not a benchmark of turbopuffer's latency or
+throughput. The BM25 threshold is chosen on the same labeled set, so that row is BM25's best case.
+
+Two things worth knowing before you run it. turbopuffer ids are u64, UUID, or strings up to 64 bytes, and a
+Polymarket CLOB token id is a 77-digit decimal string, so the script keys rows by list index and carries the
+token id as an attribute. And a Kalshi title can repeat its one informative word (`Will Israel Katz be the next
+Prime Minister of Israel?`), which BM25's query-term weighting (`k3`) rewards, so the wrong-country failure that
+motivated `match.py` is a real test of the threshold, not a freebie.
 
 ## Roadmap
 
