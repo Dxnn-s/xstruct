@@ -94,7 +94,7 @@ def test_fixture_is_well_formed_and_contains_the_israel_trap():
     assert len({l["kalshi"] for l in fx["labels"]}) == len(fx["labels"])
     katz = next(l for l in scored if "Israel Katz" in l["kalshi_title"])
     assert katz["polymarket"] is None
-    assert "—" not in json.dumps(fx, ensure_ascii=False)
+    assert chr(0x2014) not in json.dumps(fx, ensure_ascii=False)
 
 
 def test_idf_matcher_on_the_fixture_keeps_katz_out_and_finds_bennett():
@@ -117,7 +117,7 @@ def test_comparison_runs_offline_end_to_end_and_renders():
     text = tm.render(result)
     assert "idf match()" in text and "bm25 top-1, tuned" in text
     assert "not a benchmark of the engine" in text
-    assert "—" not in text
+    assert chr(0x2014) not in text
 
 
 def test_live_path_refuses_without_a_key(monkeypatch):
