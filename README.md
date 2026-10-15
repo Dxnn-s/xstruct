@@ -26,7 +26,7 @@ python -m xstruct.cli --venue pascal    # live depth-ladder board
 
 ## What it does today
 
-**Five venues behind one `Venue` interface** — Hyperliquid (perps), Pascal, Polymarket, Kalshi, and a synthetic
+**Six venues behind one `Venue` interface** — Hyperliquid (perps), Vest (perps on crypto, stocks and forex), Pascal, Polymarket, Kalshi, and a synthetic
 paper adapter so everything runs offline for demos and CI. Adding a venue is one file, not a refactor.
 
 **A live cross-venue monitor.** Pascal publishes the Polymarket `condition_id` and outcome `token_id` for
@@ -54,14 +54,14 @@ that turns a recorded pair into a shareable dislocation figure.
 Polymarket returns asks **descending**, so the first element on the wire is the *worst* ask, not the best.
 Trusting wire order gives you a best ask of 0.99 instead of the real one, and silently poisons every
 spread, mid and arbitrage check downstream. xstruct sorts both sides itself rather than trusting order.
-Pascal returns bids descending and asks ascending. Hyperliquid nests both under `levels: [bids, asks]`.
+Pascal returns bids descending and asks ascending. Hyperliquid nests both under `levels: [bids, asks]`. Vest publishes no aggressor side on trades, and its depth looks engine-generated (uniform size at every tick), so size at depth means less there.
 
 ## Known limits, stated plainly
 
 - **Transport is REST polling.** No WebSocket, no snapshot-plus-delta book maintenance. Fine for
   microstructure sampling and cross-venue comparison, not a low-latency path.
 - **Read path only.** No signing, no order placement, no market-making engine yet.
-- Adapters today are Hyperliquid, Pascal, Polymarket, Kalshi and paper.
+- Adapters today are Hyperliquid, Vest, Pascal, Polymarket, Kalshi and paper.
 
 ## Layout
 

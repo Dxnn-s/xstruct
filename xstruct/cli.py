@@ -41,7 +41,11 @@ def make_venue(name: str, symbols: list[str] | None) -> Venue:
         from .venue.pascal import PascalVenue
 
         return PascalVenue(symbols=symbols)  # None = all listed markets
-    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid, pascal, polymarket, kalshi)")
+    if name == "vest":
+        from .venue.vest import VestVenue
+
+        return VestVenue(symbols=symbols or ["BTC-PERP", "ETH-PERP"])
+    raise SystemExit(f"unknown venue: {name!r} (choices: paper, hyperliquid, pascal, polymarket, kalshi, vest)")
 
 
 def main() -> None:
