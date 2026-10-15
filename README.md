@@ -77,7 +77,7 @@ xstruct/
 ## Tests
 
 ```bash
-pytest -q     # 48 tests, all offline (network calls are injectable)
+pytest -q     # 54 tests, all offline (network calls are injectable)
 ```
 
 ## Comparing the IDF matcher against turbopuffer BM25
